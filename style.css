@@ -1,0 +1,21 @@
+/* Simple styling to make the table look good */
+body { 
+    font-family: sans-serif; 
+    padding: 20px; 
+}
+table { 
+    border-collapse: collapse; 
+    width: 100%; 
+    max-width: 800px; 
+}
+th, td { 
+    border: 1px solid #ddd; 
+    padding: 8px; 
+    text-align: left; 
+}
+th { 
+    background-color: #f2f2f2; 
+}
+tr:nth-child(even) { 
+    background-color: #f9f9f9; 
+}
