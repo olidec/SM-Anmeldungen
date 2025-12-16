@@ -26,6 +26,7 @@
     <h1>Schweizer Meisterschaften 2026 | Championnats Suisses 2026</h1>
     <h2>Angemeldete Teilnehmer | Participants Enregistrés</h2>
     <div id="tables-container">Loading data...</div>
+<!-- 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRSBNoT9SZ27matXP3CtVaBdUhQW3qyEXJrqwNdsGqrD-O6Cy8gxK_po6dqC6UGyJJ_G3yN6-1ISmYp/pub?gid=2089699474&single=true&output=csv'; -->
 
     <script>
         // 1. YOUR CSV LINK HERE
@@ -38,30 +39,24 @@
                 container.innerHTML = ''; 
                 
                 const rows = parseCSV(csvText);
-                const data = rows.slice(1); // Remove header row
+                const data = rows.slice(1); 
 
                 const categoryBuckets = {};
 
                 data.forEach(row => {
-                    // --- CONFIGURATION: Match these numbers to your columns (A=0, B=1, etc.) ---
+                    // --- CONFIGURATION ---
                     const lastName  = row[0]; // Col A
                     const firstName = row[1]; // Col B
                     const club      = row[2]; // Col C
-                    const catString = row[3]; // Col D (The one with commas)
-                    // ---------------------------------------------------------------------------
+                    const catString = row[3]; // Col D
+                    // ---------------------
                     
                     if (catString) {
-                        // Split categories and loop through them
                         const currentCats = catString.split(',').map(s => s.trim());
-
                         currentCats.forEach(category => {
                             if (!category) return;
+                            if (!categoryBuckets[category]) categoryBuckets[category] = [];
                             
-                            if (!categoryBuckets[category]) {
-                                categoryBuckets[category] = [];
-                            }
-                            
-                            // Save an object with all the details instead of just the name
                             categoryBuckets[category].push({ 
                                 first: firstName, 
                                 last: lastName, 
@@ -82,26 +77,41 @@
 
                     const table = document.createElement('table');
                     
-                    // New Header Row including Club and First Name
                     const thead = document.createElement('thead');
                     thead.innerHTML = `
                         <tr>
-                            <th>Name | Nom</th>
-                            <th>Vorname | Prénom</th>
-                            <th>Club</th>
+                            <th>Club</th> <th>Last Name</th>
+                            <th>First Name</th>
                         </tr>`;
                     table.appendChild(thead);
 
                     const tbody = document.createElement('tbody');
                     
-                    // Loop through the people in this specific category
-                    categoryBuckets[catName].forEach(person => {
+                    // --- NEW SORTING LOGIC HERE ---
+                    const sortedParticipants = categoryBuckets[catName].sort((a, b) => {
+                        // 1. Compare Club Names
+                        const clubA = (a.club || "").toLowerCase();
+                        const clubB = (b.club || "").toLowerCase();
+                        if (clubA < clubB) return -1;
+                        if (clubA > clubB) return 1;
+
+                        // 2. If Clubs are identical, sort by Last Name
+                        const nameA = (a.last || "").toLowerCase();
+                        const nameB = (b.last || "").toLowerCase();
+                        if (nameA < nameB) return -1;
+                        if (nameA > nameB) return 1;
+                        
+                        return 0;
+                    });
+                    // ------------------------------
+
+                    sortedParticipants.forEach(person => {
                         const tr = document.createElement('tr');
-                        // Fill the cells using the data object we created earlier
+                        // I re-ordered the columns so Club is first, making it easier to read
                         tr.innerHTML = `
+                            <td data-label="Club"><b>${person.club || ''}</b></td>
                             <td data-label="Last Name">${person.last || ''}</td>
                             <td data-label="First Name">${person.first || ''}</td>
-                            <td data-label="Club">${person.club || ''}</td>
                         `;
                         tbody.appendChild(tr);
                     });
@@ -112,43 +122,25 @@
                 });
             });
 
-        // Robust CSV Parser to handle commas inside quotes (e.g. "Club A, North")
         function parseCSV(text) {
             const rows = [];
             let row = [];
             let inQuote = false;
             let currentCell = '';
-            
-            // Clean weird line breaks from Google
             text = text.replace(/\r\n/g, '\n');
-
             for (let i = 0; i < text.length; i++) {
                 const char = text[i];
                 const nextChar = text[i+1];
-
                 if (char === '"') {
-                    if (inQuote && nextChar === '"') { // Handle escaped quotes ""
-                        currentCell += '"';
-                        i++;
-                    } else {
-                        inQuote = !inQuote;
-                    }
+                    if (inQuote && nextChar === '"') { currentCell += '"'; i++; } 
+                    else { inQuote = !inQuote; }
                 } else if (char === ',' && !inQuote) {
-                    row.push(currentCell);
-                    currentCell = '';
+                    row.push(currentCell); currentCell = '';
                 } else if (char === '\n' && !inQuote) {
-                    row.push(currentCell);
-                    rows.push(row);
-                    row = [];
-                    currentCell = '';
-                } else {
-                    currentCell += char;
-                }
+                    row.push(currentCell); rows.push(row); row = []; currentCell = '';
+                } else { currentCell += char; }
             }
-            if (currentCell || row.length > 0) { // Push last row
-                row.push(currentCell);
-                rows.push(row);
-            }
+            if (currentCell || row.length > 0) { row.push(currentCell); rows.push(row); }
             return rows;
         }
     </script>
