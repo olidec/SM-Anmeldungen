@@ -1,149 +1,229 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <title>Tournament Registration</title>
+  <head>
+    <title>Anmeldungen | Inscriptions</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; background-color: #f9f9f9; }
-        .category-section { margin-bottom: 50px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        h3 { color: #2c3e50; border-bottom: 3px solid #3498db; padding-bottom: 10px; margin-top: 0; }
-        
-        table { border-collapse: collapse; width: 100%; margin-top: 15px; }
-        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #ddd; }
-        th { background-color: #f2f2f2; color: #555; font-weight: bold; }
-        tr:hover { background-color: #f5f5f5; }
-        
-        /* Mobile responsive adjustments */
-        @media screen and (max-width: 600px) {
-            table, thead, tbody, th, td, tr { display: block; }
-            thead tr { position: absolute; top: -9999px; left: -9999px; }
-            tr { margin: 0 0 1rem 0; border: 1px solid #ddd; padding: 10px; }
-            td { border: none; border-bottom: 1px solid #eee; position: relative; padding-left: 50%; }
-            td:before { position: absolute; top: 12px; left: 6px; width: 45%; padding-right: 10px; white-space: nowrap; font-weight: bold; content: attr(data-label); }
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        padding: 20px;
+        background-color: #f9f9f9;
+      }
+      .category-section {
+        margin-bottom: 50px;
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+      h3 {
+        color: #2c3e50;
+        border-bottom: 3px solid #3498db;
+        padding-bottom: 10px;
+        margin-top: 0;
+      }
+
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        margin-top: 15px;
+      }
+      th,
+      td {
+        padding: 12px 15px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+      }
+      th {
+        background-color: #f2f2f2;
+        color: #555;
+        font-weight: bold;
+      }
+      tr:hover {
+        background-color: #f5f5f5;
+      }
+
+      /* Mobile responsive adjustments */
+      @media screen and (max-width: 600px) {
+        table,
+        thead,
+        tbody,
+        th,
+        td,
+        tr {
+          display: block;
         }
+        thead tr {
+          position: absolute;
+          top: -9999px;
+          left: -9999px;
+        }
+        tr {
+          margin: 0 0 1rem 0;
+          border: 1px solid #ddd;
+          padding: 10px;
+        }
+        td {
+          border: none;
+          border-bottom: 1px solid #eee;
+          position: relative;
+          padding-left: 50%;
+        }
+        td:before {
+          position: absolute;
+          top: 12px;
+          left: 6px;
+          width: 45%;
+          padding-right: 10px;
+          white-space: nowrap;
+          font-weight: bold;
+          content: attr(data-label);
+        }
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <h1>Schweizer Meisterschaften 2026 | Championnats Suisses 2026</h1>
     <h2>Angemeldete Teilnehmer | Participants Enregistrés</h2>
     <div id="tables-container">Loading data...</div>
-<!-- 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRSBNoT9SZ27matXP3CtVaBdUhQW3qyEXJrqwNdsGqrD-O6Cy8gxK_po6dqC6UGyJJ_G3yN6-1ISmYp/pub?gid=2089699474&single=true&output=csv'; -->
+    <!-- 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRSBNoT9SZ27matXP3CtVaBdUhQW3qyEXJrqwNdsGqrD-O6Cy8gxK_po6dqC6UGyJJ_G3yN6-1ISmYp/pub?gid=2089699474&single=true&output=csv'; -->
 
     <script>
-        // 1. YOUR CSV LINK HERE
-        const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRSBNoT9SZ27matXP3CtVaBdUhQW3qyEXJrqwNdsGqrD-O6Cy8gxK_po6dqC6UGyJJ_G3yN6-1ISmYp/pub?gid=2089699474&single=true&output=csv';
+      // 1. YOUR CSV LINK HERE
+      const sheetUrl =
+        "https://docs.google.com/spreadsheets/d/e/2PACX-1vRSBNoT9SZ27matXP3CtVaBdUhQW3qyEXJrqwNdsGqrD-O6Cy8gxK_po6dqC6UGyJJ_G3yN6-1ISmYp/pub?gid=2089699474&single=true&output=csv";
 
-        fetch(sheetUrl)
-            .then(res => res.text())
-            .then(csvText => {
-                const container = document.getElementById('tables-container');
-                container.innerHTML = ''; 
-                
-                const rows = parseCSV(csvText);
-                const data = rows.slice(1); 
+      fetch(sheetUrl)
+        .then((res) => res.text())
+        .then((csvText) => {
+          const container = document.getElementById("tables-container");
+          container.innerHTML = "";
 
-                const categoryBuckets = {};
+          const rows = parseCSV(csvText);
+          const data = rows.slice(1);
 
-                data.forEach(row => {
-                    // --- CONFIGURATION ---
-                    const lastName  = row[0]; // Col A
-                    const firstName = row[1]; // Col B
-                    const club      = row[2]; // Col C
-                    const catString = row[3]; // Col D
-                    // ---------------------
-                    
-                    if (catString) {
-                        const currentCats = catString.split(',').map(s => s.trim());
-                        currentCats.forEach(category => {
-                            if (!category) return;
-                            if (!categoryBuckets[category]) categoryBuckets[category] = [];
-                            
-                            categoryBuckets[category].push({ 
-                                first: firstName, 
-                                last: lastName, 
-                                club: club 
-                            });
-                        });
-                    }
+          const categoryBuckets = {};
+
+          data.forEach((row) => {
+            // --- CONFIGURATION ---
+            const lastName = row[0]; // Col A
+            const firstName = row[1]; // Col B
+            const club = row[2]; // Col C
+            const catString = row[3]; // Col D
+            // ---------------------
+
+            if (catString) {
+              const currentCats = catString.split(",").map((s) => s.trim());
+              currentCats.forEach((category) => {
+                if (!category) return;
+                if (!categoryBuckets[category]) categoryBuckets[category] = [];
+
+                categoryBuckets[category].push({
+                  first: firstName,
+                  last: lastName,
+                  club: club,
                 });
+              });
+            }
+          });
 
-                // Generate Tables
-                Object.keys(categoryBuckets).sort().forEach(catName => {
-                    const section = document.createElement('div');
-                    section.className = 'category-section';
+          // Generate Tables
+          Object.keys(categoryBuckets)
+            .sort()
+            .forEach((catName) => {
+              const section = document.createElement("div");
+              section.className = "category-section";
 
-                    const title = document.createElement('h3');
-                    title.textContent = catName;
-                    section.appendChild(title);
+              const title = document.createElement("h3");
+              title.textContent = catName;
+              section.appendChild(title);
 
-                    const table = document.createElement('table');
-                    
-                    const thead = document.createElement('thead');
-                    thead.innerHTML = `
+              const table = document.createElement("table");
+
+              const thead = document.createElement("thead");
+              thead.innerHTML = `
                         <tr>
                             <th>Club</th> <th>Last Name</th>
                             <th>First Name</th>
                         </tr>`;
-                    table.appendChild(thead);
+              table.appendChild(thead);
 
-                    const tbody = document.createElement('tbody');
-                    
-                    // --- NEW SORTING LOGIC HERE ---
-                    const sortedParticipants = categoryBuckets[catName].sort((a, b) => {
-                        // 1. Compare Club Names
-                        const clubA = (a.club || "").toLowerCase();
-                        const clubB = (b.club || "").toLowerCase();
-                        if (clubA < clubB) return -1;
-                        if (clubA > clubB) return 1;
+              const tbody = document.createElement("tbody");
 
-                        // 2. If Clubs are identical, sort by Last Name
-                        const nameA = (a.last || "").toLowerCase();
-                        const nameB = (b.last || "").toLowerCase();
-                        if (nameA < nameB) return -1;
-                        if (nameA > nameB) return 1;
-                        
-                        return 0;
-                    });
-                    // ------------------------------
+              // --- NEW SORTING LOGIC HERE ---
+              const sortedParticipants = categoryBuckets[catName].sort(
+                (a, b) => {
+                  // 1. Compare Club Names
+                  const clubA = (a.club || "").toLowerCase();
+                  const clubB = (b.club || "").toLowerCase();
+                  if (clubA < clubB) return -1;
+                  if (clubA > clubB) return 1;
 
-                    sortedParticipants.forEach(person => {
-                        const tr = document.createElement('tr');
-                        // I re-ordered the columns so Club is first, making it easier to read
-                        tr.innerHTML = `
-                            <td data-label="Club"><b>${person.club || ''}</b></td>
-                            <td data-label="Last Name">${person.last || ''}</td>
-                            <td data-label="First Name">${person.first || ''}</td>
+                  // 2. If Clubs are identical, sort by Last Name
+                  const nameA = (a.last || "").toLowerCase();
+                  const nameB = (b.last || "").toLowerCase();
+                  if (nameA < nameB) return -1;
+                  if (nameA > nameB) return 1;
+
+                  return 0;
+                }
+              );
+              // ------------------------------
+
+              sortedParticipants.forEach((person) => {
+                const tr = document.createElement("tr");
+                // I re-ordered the columns so Club is first, making it easier to read
+                tr.innerHTML = `
+                            <td data-label="Club"><b>${
+                              person.club || ""
+                            }</b></td>
+                            <td data-label="Last Name">${person.last || ""}</td>
+                            <td data-label="First Name">${
+                              person.first || ""
+                            }</td>
                         `;
-                        tbody.appendChild(tr);
-                    });
-                    table.appendChild(tbody);
-                    
-                    section.appendChild(table);
-                    container.appendChild(section);
-                });
+                tbody.appendChild(tr);
+              });
+              table.appendChild(tbody);
+
+              section.appendChild(table);
+              container.appendChild(section);
             });
+        });
 
-        function parseCSV(text) {
-            const rows = [];
-            let row = [];
-            let inQuote = false;
-            let currentCell = '';
-            text = text.replace(/\r\n/g, '\n');
-            for (let i = 0; i < text.length; i++) {
-                const char = text[i];
-                const nextChar = text[i+1];
-                if (char === '"') {
-                    if (inQuote && nextChar === '"') { currentCell += '"'; i++; } 
-                    else { inQuote = !inQuote; }
-                } else if (char === ',' && !inQuote) {
-                    row.push(currentCell); currentCell = '';
-                } else if (char === '\n' && !inQuote) {
-                    row.push(currentCell); rows.push(row); row = []; currentCell = '';
-                } else { currentCell += char; }
+      function parseCSV(text) {
+        const rows = [];
+        let row = [];
+        let inQuote = false;
+        let currentCell = "";
+        text = text.replace(/\r\n/g, "\n");
+        for (let i = 0; i < text.length; i++) {
+          const char = text[i];
+          const nextChar = text[i + 1];
+          if (char === '"') {
+            if (inQuote && nextChar === '"') {
+              currentCell += '"';
+              i++;
+            } else {
+              inQuote = !inQuote;
             }
-            if (currentCell || row.length > 0) { row.push(currentCell); rows.push(row); }
-            return rows;
+          } else if (char === "," && !inQuote) {
+            row.push(currentCell);
+            currentCell = "";
+          } else if (char === "\n" && !inQuote) {
+            row.push(currentCell);
+            rows.push(row);
+            row = [];
+            currentCell = "";
+          } else {
+            currentCell += char;
+          }
         }
+        if (currentCell || row.length > 0) {
+          row.push(currentCell);
+          rows.push(row);
+        }
+        return rows;
+      }
     </script>
-
-</body>
+  </body>
 </html>
